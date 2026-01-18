@@ -1,11 +1,12 @@
-use crate::utils::setup_test;
+use crate::utils::spawn_app;
 
 #[tokio::test]
 async fn healt_check_works() {
-    let (address, _, client) = setup_test().await;
+    let app = spawn_app().await;
 
-    let url = format!("{}/health_check", &address);
-    let response = client
+    let url = format!("{}/health_check", &app.address);
+    let response = app
+        .client
         .get(url)
         .send()
         .await

@@ -1,12 +1,13 @@
-use crate::utils::setup_test;
+use crate::utils::spawn_app;
 
 #[tokio::test]
 async fn subscribe_returns_a_200_for_valid_form_data() {
-    let (address, mut conn, client) = setup_test().await;
+    let app = spawn_app().await;
 
-    let url = format!("{}/subscriptions", &address);
+    let url = format!("{}/subscriptions", &app.address);
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
-    let response = client
+    let response = app
+        .client
         .post(url)
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(body)
@@ -17,7 +18,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     assert_eq!(200, response.status().as_u16());
 
     let saved = sqlx::query!("SELECT email, name FROM subscriptions")
-        .fetch_one(&mut conn)
+        .fetch_one(&app.db_pool)
         .await
         .expect("Failed to fetch saved subscriptions");
 
@@ -27,7 +28,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
 
 #[tokio::test]
 async fn subscribe_returns_a_400_when_data_is_missing() {
-    let (address, _, client) = setup_test().await;
+    let app = spawn_app().await;
 
     let test_cases = vec![
         ("name=le%20guin", "missing the email"),
@@ -36,8 +37,9 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
     ];
 
     for (invalid_body, error_message) in test_cases {
-        let response = client
-            .post(format!("{}/subscriptions", &address))
+        let response = app
+            .client
+            .post(format!("{}/subscriptions", &app.address))
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body(invalid_body)
             .send()
