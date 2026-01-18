@@ -22,7 +22,7 @@ jobs:
           POSTGRES_PASSWORD: password
           POSTGRES_DB: postgres
         ports:
-          - 54321:5432
+          - 5432:5432
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
