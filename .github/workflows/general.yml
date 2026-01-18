@@ -1,13 +1,6 @@
 name: Rust
 
-on:
-  push:
-    branches:
-      - root-chapter-03-part1
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - root-chapter-03-part1
+on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
@@ -21,6 +14,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://${{ env.APP_USER }}:${{ env.APP_USER_PWD }}@localhost:5432/${{ env.APP_DB_NAME }}
     services:
       postgres:
         image: postgres:14
@@ -30,6 +25,11 @@ jobs:
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -38,14 +38,17 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Install sqlx-cli
-        run: cargo install sqlx-cli
-          --version=${{ env.SQLX_VERSION }}
-          --features ${{ env.SQLX_FEATURES }}
-          --no-default-features
-          --locked
+        run: |
+          cargo install sqlx-cli \
+            --version "${{ env.SQLX_VERSION }}" \
+            --features "${{ env.SQLX_FEATURES }}" \
+            --no-default-features \
+            --locked
+
       - name: Create app user in Postgres
         run: |
-          sudo apt-get install postgresql-client
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
 
           CREATE_QUERY="CREATE USER ${APP_USER} WITH PASSWORD '${APP_USER_PWD}';"
           PGPASSWORD="password" psql -U "postgres" -h "localhost" -c "${CREATE_QUERY}"
@@ -91,6 +94,8 @@ jobs:
   coverage:
     name: Code coverage
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://${{ env.APP_USER }}:${{ env.APP_USER_PWD }}@localhost:5432/${{ env.APP_DB_NAME }}
     services:
       postgres:
         image: postgres:14
@@ -100,47 +105,64 @@ jobs:
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
+
       - name: Install the Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: llvm-tools-preview
+
       - name: Install sqlx-cli
-        run: cargo install sqlx-cli
-          --version=${{ env.SQLX_VERSION }}
-          --features ${{ env.SQLX_FEATURES }}
-          --no-default-features
-          --locked
+        run: |
+          cargo install sqlx-cli \
+            --version "${{ env.SQLX_VERSION }}" \
+            --features "${{ env.SQLX_FEATURES }}" \
+            --no-default-features \
+            --locked
+
       - name: Create app user in Postgres
         run: |
-          sudo apt-get install postgresql-client
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
 
-          # Create the application user
           CREATE_QUERY="CREATE USER ${APP_USER} WITH PASSWORD '${APP_USER_PWD}';"
           PGPASSWORD="password" psql -U "postgres" -h "localhost" -c "${CREATE_QUERY}"
 
-          # Grant create db privileges to the app user
           GRANT_QUERY="ALTER USER ${APP_USER} CREATEDB;"
           PGPASSWORD="password" psql -U "postgres" -h "localhost" -c "${GRANT_QUERY}"
+
       - name: Migrate database
         run: SKIP_DOCKER=true ./scripts/init_db.sh
+
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+
       - name: Generate code coverage
         run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+
       - name: Generate report
         run: cargo llvm-cov report --html --output-dir coverage
+
       - uses: actions/upload-artifact@v4
         with:
           name: "Coverage report"
-          path: coverage/ 
+          path: coverage/
+
   sort:
     name: Sort Cargo.toml
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Install the Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-sort
