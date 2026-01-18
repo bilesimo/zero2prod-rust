@@ -51,15 +51,16 @@ jobs:
       - name: Generate code coverage
         run: |
           cargo tarpaulin --verbose --workspace
-
+  
   sort:
-    name: Sort cargo.toml
+    name: Sort Cargo.toml
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
         with:
-          components: sort
-      - uses: Swatinem/rust-cache@v2
-      - name: Enforce sort of cargo.toml
-        run: cargo sort --check
+          tool: cargo-sort
+      - name: Enforce sort of Cargo.toml
+        run: cargo sort --workspace --check
+
