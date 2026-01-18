@@ -1,5 +1,5 @@
-use sqlx::{PgConnection, Connection};
 use reqwest::Client;
+use sqlx::{Connection, PgConnection};
 use zero2prod::{configuration::get_configuration, startup::run};
 
 fn spawn_app() -> String {

@@ -23,7 +23,12 @@ impl DatabaseSettings {
 }
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
-    let mut settings = config::Config::default();
-    settings.merge(config::File::with_name("configuration"))?;
-    settings.try_into()
+    let base_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let config_file = base_path.join("configuration.yaml");
+
+    let settings = config::Config::builder()
+        .add_source(config::File::from(config_file))
+        .build()?;
+
+    settings.try_deserialize::<Settings>()
 }
