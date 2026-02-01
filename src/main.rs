@@ -12,8 +12,15 @@ async fn main() -> std::io::Result<()> {
     let configuration = get_configuration().expect("Failed to read configuration.");
 
     let connection_pool = PgPoolOptions::new()
-        .acquire_timeout(std::time::Duration::from_secs(2))
-        .connect_lazy_with(configuration.database.with_db());
+        .acquire_timeout(std::time::Duration::from_secs(10))
+        .connect_with(configuration.database.with_db())
+        .await
+        .expect("Failed to connect to Postgres.");
+
+    sqlx::migrate!("./migrations")
+        .run(&connection_pool)
+        .await
+        .expect("Failed to migrate the database");
 
     let address = configuration.application.address_string();
     let listener = TcpListener::bind(address)?;
