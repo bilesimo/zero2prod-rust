@@ -1,0 +1,9 @@
+target/
+.git/
+.github/
+Dockerfile
+scripts/
+migrations/
+*.md
+.env
+.DS_Store
