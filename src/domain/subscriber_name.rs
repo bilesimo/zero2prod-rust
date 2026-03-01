@@ -5,21 +5,16 @@ pub struct SubscriberName(String);
 impl SubscriberName {
     pub fn parse(s: String) -> Result<Self, String> {
         let is_empty_name = s.trim().is_empty();
+
         let is_too_long = s.graphemes(true).count() > 256;
+
         let forbidden_characters = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
         let contains_forbidden_characters = s.chars().any(|g| forbidden_characters.contains(&g));
+
         if is_empty_name || is_too_long || contains_forbidden_characters {
             return Err("Invalid subscriber name.".into());
         }
         Ok(Self(s))
-    }
-
-    pub fn inner(self) -> String {
-        self.0
-    }
-
-    pub fn inner_mut(&mut self) -> &mut str {
-        &mut self.0
     }
 }
 
