@@ -11,8 +11,17 @@ async fn main() -> std::io::Result<()> {
 
     let configuration = get_configuration().expect("Failed to read configuration.");
 
+    tracing::info!(
+        "Attempting to connect to database at {}:{} (db: {}, user: {}, ssl: {})",
+        configuration.database.host,
+        configuration.database.port,
+        configuration.database.database_name,
+        configuration.database.username,
+        configuration.database.require_ssl
+    );
+
     let connection_pool = PgPoolOptions::new()
-        .acquire_timeout(std::time::Duration::from_secs(10))
+        .acquire_timeout(std::time::Duration::from_secs(30))
         .connect_with(configuration.database.with_db())
         .await
         .expect("Failed to connect to Postgres.");
