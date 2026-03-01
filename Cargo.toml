@@ -30,4 +30,12 @@ uuid = { version = "1.20.0", features = ["v4"] }
 [dependencies.sqlx]
 version = "0.8.6"
 default-features = false
-features = ["runtime-tokio", "tls-rustls", "macros", "postgres", "uuid", "chrono", "migrate"]
+features = [
+    "runtime-tokio",
+    "tls-native-tls",
+    "macros",
+    "postgres",
+    "uuid",
+    "chrono",
+    "migrate",
+]
