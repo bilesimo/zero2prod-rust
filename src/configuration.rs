@@ -48,12 +48,8 @@ impl DatabaseSettings {
     pub fn with_db(&self) -> PgConnectOptions {
         let mut options = self.without_db().database(&self.database_name);
 
-        // DigitalOcean managed databases use self-signed certificates
-        // We need to accept them while still requiring SSL encryption
         if self.require_ssl {
-            options = options
-                .ssl_mode(PgSslMode::Require)
-                .ssl_root_cert_from_pem(vec![]); // Accept any certificate
+            options = options.ssl_mode(PgSslMode::Require);
         }
 
         options.log_statements(tracing::log::LevelFilter::Trace)
