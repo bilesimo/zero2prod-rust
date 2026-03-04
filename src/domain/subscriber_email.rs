@@ -1,3 +1,4 @@
+use serde::{Serialize, Serializer};
 use validator::ValidateEmail;
 
 pub struct SubscriberEmail(String);
@@ -15,6 +16,15 @@ impl SubscriberEmail {
 impl AsRef<str> for SubscriberEmail {
     fn as_ref(&self) -> &str {
         &self.0
+    }
+}
+
+impl Serialize for SubscriberEmail {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.0.as_str())
     }
 }
 

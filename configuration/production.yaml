@@ -3,5 +3,5 @@ application:
 database:
     require_ssl: true
 email_client:
-    base_url: "https://api.mailgun.net/"
-    sender: "[EMAIL_ADDRESS]"
+    base_url: "https://api.resend.com"
+    sender: "stang3tzzz@gmail.com"

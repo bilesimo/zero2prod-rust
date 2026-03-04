@@ -17,7 +17,14 @@ async fn main() -> std::io::Result<()> {
         .sender()
         .expect("Invalid sender email");
 
-    let email_client = EmailClient::new(configuration.email_client.base_url, sender_email);
+    let timeout = configuration.email_client.timeout();
+
+    let email_client = EmailClient::new(
+        configuration.email_client.base_url,
+        sender_email,
+        configuration.email_client.auth_token,
+        timeout,
+    );
 
     let connection_pool = PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(30))
