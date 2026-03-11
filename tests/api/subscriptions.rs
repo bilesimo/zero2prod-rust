@@ -1,4 +1,4 @@
-use crate::utils::spawn_app;
+use super::helpers::spawn_app;
 
 #[tokio::test]
 async fn subscribe_returns_a_200_for_valid_form_data() {

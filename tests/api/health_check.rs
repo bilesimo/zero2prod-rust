@@ -1,4 +1,4 @@
-use crate::utils::spawn_app;
+use super::helpers::spawn_app;
 
 #[tokio::test]
 async fn healt_check_works() {
