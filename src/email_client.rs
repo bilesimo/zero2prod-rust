@@ -46,7 +46,7 @@ impl EmailClient {
         let url = format!("{}/emails", &self.base_url);
         let request = EmailRequest {
             from: &self.sender,
-            to: &recipient,
+            to: recipient,
             subject,
             html_content,
             text_content,

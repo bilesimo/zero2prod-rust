@@ -58,17 +58,9 @@ impl TestApp {
             confirmation_link.set_port(Some(self.port)).unwrap();
             confirmation_link
         };
-        let html = get_link(&body["HtmlBody"].as_str().unwrap());
-        let plain_text = get_link(&body["TextBody"].as_str().unwrap());
+        let html = get_link(&body["html_content"].as_str().unwrap());
+        let plain_text = get_link(&body["text_content"].as_str().unwrap());
         ConfirmationLinks { html, plain_text }
-    }
-
-    pub async fn confirm_subscription(&self) -> reqwest::Response {
-        self.client
-            .get(&format!("{}{}", &self.address, "/subscriptions/confirm"))
-            .send()
-            .await
-            .expect("Failed to execute request")
     }
 }
 
